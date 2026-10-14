@@ -1,0 +1,42 @@
+
+import subprocess, re
+from collections import Counter
+
+MOODS = {
+    "apaga_incendio": ["fix", "urgent", "hotfix", "socorro", "pelo amor", "bug"],
+    "cientista": ["wip", "test", "tentando", "vamos ver", "experiment"],
+    "marie_kondo": ["refactor", "clean", "organize", "rename"],
+    "produtivo": ["feat", "add", "implement", "create"],
+}
+
+def get_commits(limit=200):
+    try:
+        out = subprocess.check_output(
+            ["git", "log", f"-{limit}", "--pretty=%s"], text=True
+        ).lower()
+        return out.splitlines()
+    except Exception:
+        return ["feat: initial commit", "fix: bug urgente", "wip tentando algo", "fix pelo amor de deus"]
+
+def analyze(commits):
+    scores = Counter()
+    for msg in commits:
+        for mood, keywords in MOODS.items():
+            if any(k in msg for k in keywords):
+                scores[mood] += 1
+    ghost = sum(1 for m in commits if m.strip() in ["a", ".", "fix", "update"])
+    return scores, ghost, len(commits)
+
+def main():
+    commits = get_commits()
+    scores, ghost, total = analyze(commits)
+    top = scores.most_common(1)[0][0] if scores else "produtivo"
+    emojis = {"apaga_incendio": "\U0001f525", "cientista": "\U0001f9ea", "marie_kondo": "\u2728", "produtivo": "\U0001f680"}
+    print(f"Seu mood: {top} {emojis.get(top,'')}")
+    print(f"Total commits analisados: {total}")
+    print(f"Commits fantasmas (ex: 'a', 'fix'): {ghost}")
+    if ghost > total * 0.2:
+        print("Recomendação: pare de commitar 'a' e escreva mensagens decentes 😅")
+
+if __name__ == "__main__":
+    main()
