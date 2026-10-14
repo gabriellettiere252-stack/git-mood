@@ -1,0 +1,7 @@
+seu-repositorio/
+├── git_mood.py
+├── README.md
+├── requirements.txt
+└── .github/
+    └── workflows/
+        └── mood-check.yml  <-- o robô vai aqui
